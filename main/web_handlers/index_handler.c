@@ -1,6 +1,7 @@
 #include <sys/param.h>
 #include <esp_log.h>
 #include <esp_system.h>
+#include <http_parser.h>
 #include "esp_http_server.h"
 #include "index_handler.h"
 
@@ -12,7 +13,7 @@
 #define IS_FILE_EXT(filename, ext) \
     (strcasecmp(&filename[strlen(filename) - sizeof(ext) + 1], ext) == 0)
 
-static const char *LOGNAME = "Index handler";
+static const char *LOGNAME = "Index";
 
 void log_headers(httpd_req_t *request)
 {
@@ -37,6 +38,8 @@ esp_err_t set_content_type_from_file(httpd_req_t *req, const char *filename)
         return httpd_resp_set_type(req, "text/javascript");
     } else if (IS_FILE_EXT(filename, ".html")) {
         return httpd_resp_set_type(req, "text/html");
+    } else if (IS_FILE_EXT(filename, ".css")) {
+        return httpd_resp_set_type(req, "text/css");
     } else if (IS_FILE_EXT(filename, ".jpg")) {
         return httpd_resp_set_type(req, "image/jpeg");
     } else if (IS_FILE_EXT(filename, ".ico")) {
@@ -47,29 +50,26 @@ esp_err_t set_content_type_from_file(httpd_req_t *req, const char *filename)
     return httpd_resp_set_type(req, "text/plain");
 }
 
-/** 
- * Handler: GET /
- */
-esp_err_t index_handler(httpd_req_t *request)
+const char* get_uri(httpd_req_t *request)
+{
+    if (strcmp(request->uri, "/") == 0) {
+        return "/index.html";
+    } else {
+        return request->uri;
+    }
+}
+
+size_t send_file(httpd_req_t *request, const char* file_name)
 {
     static char response[SEND_BUF_LEN];
-    char fileName[URI_PATH_MAX] = FILE_SYSTEM_ROOT;
     size_t readed = 0;
     size_t readedTotal = 0;
 
-    log_headers(request);
-
-    ESP_LOGI(LOGNAME, "Try %i %s", request->method, request->uri);
-
-    strlcat(fileName, request->uri, URI_PATH_MAX);
-
-    set_content_type_from_file(request, fileName);
-
-    FILE* file = fopen(fileName, "r");
+    FILE* file = fopen(file_name, "r");
     if (file == NULL) {
         httpd_resp_send_err(request, HTTPD_404_NOT_FOUND, "404 Not found");
-        ESP_LOGW(LOGNAME, "File not found %s", fileName);
-        return ESP_OK;
+        ESP_LOGW(LOGNAME, "File not found %s", file_name);
+        return 0;
     }
 
     do {
@@ -78,9 +78,33 @@ esp_err_t index_handler(httpd_req_t *request)
         readedTotal += readed;
     } while(readed == SEND_BUF_LEN);
 
+    fclose(file);
+
     httpd_resp_send_chunk(request, NULL, 0);
 
-    ESP_LOGI(LOGNAME, "Readed bytes: %i", readedTotal);
+    return readedTotal;
+}
+
+/** 
+ * Handler: GET /
+ */
+esp_err_t index_handler(httpd_req_t *request)
+{
+    char file_name[URI_PATH_MAX] = FILE_SYSTEM_ROOT;
+
+    log_headers(request);
+
+    const char* method_name = http_method_str(request->method);
+    const char* uri = get_uri(request);
+    
+    strlcat(file_name, uri, URI_PATH_MAX);
+
+    set_content_type_from_file(request, file_name);
+    size_t readed = send_file(request, file_name);
+
+    if (readed != 0) {
+        ESP_LOGI(LOGNAME, "%s %s (%d bytes)", method_name, uri, readed);
+    }
 
     return ESP_OK;
 }

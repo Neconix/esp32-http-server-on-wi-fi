@@ -8,8 +8,6 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
-#include <driver/spi_master.h>
-#include <hal/spi_types.h>
 #include <driver/gpio.h>
 #include "esp_log.h"
 
@@ -37,7 +35,7 @@
 #define AP_WIFI_SSID CONFIG_WIFI_SSID
 #define AP_WIFI_PASS CONFIG_WIFI_PASSWORD
 
-static const char *TAG = "probe";
+static const char *TAG = "MAIN";
 
 // static void connect_handler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data)
 // {
@@ -58,7 +56,7 @@ static const char *TAG = "probe";
 //     }
 // }
 
-void ListDir(char* path)
+void list_dir(char* path)
 {
     DIR* dir = opendir(path);
     assert(dir != NULL);
@@ -71,7 +69,7 @@ void ListDir(char* path)
     closedir(dir);
 }
 
-void InitSpiffs() {
+void init_spiffs() {
     ESP_LOGI(TAG, "Initializing SPIFFS");
 
     esp_vfs_spiffs_conf_t conf = {
@@ -81,8 +79,8 @@ void InitSpiffs() {
         .format_if_mount_failed =true
     };
 
-    // Use settings defined above toinitialize and mount SPIFFS filesystem.
-    // Note: esp_vfs_spiffs_register is anall-in-one convenience function.
+    // Use settings defined above to initialize and mount SPIFFS filesystem.
+    // Note: esp_vfs_spiffs_register is an all-in-one convenience function.
     esp_err_t ret = esp_vfs_spiffs_register(&conf);
 
     if (ret != ESP_OK) {
@@ -105,20 +103,31 @@ void InitSpiffs() {
     }
 
     // TODO debug
-    // ListDir("/spiffs/");
+    // list_dir("/spiffs/");
+}
+
+void set_gpio_levels(void)
+{
+    for (uint8_t gpio_num = 1; gpio_num < 5; gpio_num++)
+    {
+        gpio_set_direction(gpio_num, GPIO_MODE_OUTPUT);
+        gpio_set_level(gpio_num, 0);
+    }
 }
 
 void app_main(void)
 {
     httpd_uri_t endpoints[] = {
+        gpio_uri,
+        include_uri,
         index_uri,
-        test_uri,
     };
 
-    ESP_ERROR_CHECK(nvs_flash_erase());
+    // ESP_ERROR_CHECK(nvs_flash_erase());
     ESP_ERROR_CHECK(nvs_flash_init());
 
-    InitSpiffs();
+    init_spiffs();
+    set_gpio_levels();
 
     bool wifi_connected = wifi_init_station(
         AP_WIFI_SSID,
