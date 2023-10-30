@@ -5,8 +5,8 @@ The **spiffs** file system is used to save html, css, js files into ESP32 intern
 The device connects to the network via **Wi-Fi** and receives an IP address via DHCP. The received address is logged to the ESP32 console (ESP-IDF monitor). The web server listens to standard port 80 using the HTTP protocol.
 
 ## Endpoints
-**/** or **/index.html** - index page;
-**/include** - included css, js files here.
+- `/` or `/index.html` - index page;
+- `/include` - included css, js files here.
 
 # Software requirements
 esp-idf v5.x
