@@ -1,7 +1,9 @@
 # ESP32 http server with wi-fi connection
 This project uses the http server implementation from **ESP-IDF** framework on the **ESP32** board to display and change the state of pins. 
+
 From a web browser you can monitoring ESP32 state. For page layout used **Bootstrap 5** and for performing requests - a plain **javascript**.
 The **spiffs** file system is used to save html, css, js files into ESP32 internal flash.
+
 The device connects to the network via **Wi-Fi** and receives an IP address via DHCP. The received address is logged to the ESP32 console (ESP-IDF monitor). The web server listens to standard port 80 using the HTTP protocol.
 
 ## Endpoints
