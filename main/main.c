@@ -118,11 +118,13 @@ void set_gpio_levels(void)
 void app_main(void)
 {
     httpd_uri_t endpoints[] = {
-        gpio_uri,
+        gpio_get_uri,
+        gpio_put_uri,
         include_uri,
         index_uri,
     };
 
+    // Uncomment if wi-fi not connected with valid credentials
     // ESP_ERROR_CHECK(nvs_flash_erase());
     ESP_ERROR_CHECK(nvs_flash_init());
 
