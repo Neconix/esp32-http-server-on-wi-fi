@@ -37,6 +37,11 @@
 
 static const char *TAG = "MAIN";
 
+static uint8_t pin5 = 0;
+static uint8_t pin21 = 0;
+static uint8_t pin22 = 0;
+static uint8_t pin23 = 0;
+
 // static void connect_handler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data)
 // {
 //     httpd_handle_t* server = (httpd_handle_t*) arg;
@@ -106,7 +111,23 @@ void init_spiffs() {
     // list_dir("/spiffs/");
 }
 
-void set_gpio_levels(void)
+void set_input_pins(void)
+{
+    // Setting iput mode for 5, 21, 22, 23 pins
+    gpio_set_direction(GPIO_NUM_5, GPIO_MODE_INPUT);
+    gpio_set_level(GPIO_NUM_5, 0);
+
+    gpio_set_direction(GPIO_NUM_21, GPIO_MODE_INPUT);
+    gpio_set_level(GPIO_NUM_21, 0);
+
+    gpio_set_direction(GPIO_NUM_22, GPIO_MODE_INPUT);
+    gpio_set_level(GPIO_NUM_22, 0);
+
+    gpio_set_direction(GPIO_NUM_23, GPIO_MODE_INPUT);
+    gpio_set_level(GPIO_NUM_23, 0);
+}
+
+void set_output_pins(void)
 {
     // Setting level for 2, 4, 18, 19 pins to LOW
     gpio_set_direction(GPIO_NUM_2, GPIO_MODE_OUTPUT);
@@ -120,6 +141,37 @@ void set_gpio_levels(void)
 
     gpio_set_direction(GPIO_NUM_19, GPIO_MODE_OUTPUT);
     gpio_set_level(GPIO_NUM_19, 0);
+}
+
+/**
+ * @brief Task thread for checking pins state change
+ */
+void input_pins_thread(void *pvParameters) 
+{
+    for (;;)
+    {
+        if (pin5 != gpio_get_level(GPIO_NUM_5)) {
+            pin5 = gpio_get_level(GPIO_NUM_5);
+            ESP_LOGI(TAG, "GPIO5 level changed to %d", pin5);
+        }
+
+        if (pin21 != gpio_get_level(GPIO_NUM_21)) {
+            pin21 = gpio_get_level(GPIO_NUM_21);
+            ESP_LOGI(TAG, "GPIO21 level changed to %d", pin21);
+        }
+
+        if (pin22 != gpio_get_level(GPIO_NUM_22)) {
+            pin22 = gpio_get_level(GPIO_NUM_22);
+            ESP_LOGI(TAG, "GPIO22 level changed to %d", pin22);
+        }
+
+        if (pin23 != gpio_get_level(GPIO_NUM_23)) {
+            pin23 = gpio_get_level(GPIO_NUM_23);
+            ESP_LOGI(TAG, "GPIO23 level changed to %d", pin23);
+        }
+
+        vTaskDelay(100 / portTICK_PERIOD_MS);
+    }
 }
 
 void app_main(void)
@@ -136,7 +188,10 @@ void app_main(void)
     ESP_ERROR_CHECK(nvs_flash_init());
 
     init_spiffs();
-    set_gpio_levels();
+    set_input_pins();
+    set_output_pins();
+
+    xTaskCreate(input_pins_thread, "InputPinsThread", 1024 * 6, NULL, 2, NULL);
 
     bool wifi_connected = wifi_init_station(
         AP_WIFI_SSID,

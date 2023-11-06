@@ -139,8 +139,11 @@
       <div class="container-fluid px-5">
         <div class="row">
           <div class="col gy-3">
-            <h2>Update outputs</h2>
+            <h2>Set output level</h2>
             <hr>
+            <section>
+              <p>Current pins state listed below. Change checkboxes for setting new state.</p>
+            </section>
             <section>
               <form>
                 <div class="form-check">
@@ -176,10 +179,37 @@
             <h2>Outputs status</h2>
             <hr>
             <section>
-              Some GPIO output status
+              <p>Current GPIO output statuses. Refresh interval 15 sec.</p>
+              <p>Last read at: </p>
+            </section>
+            <section>
+              <div class="col-2">
+                <div class="input-group mb-3">
+                  <span class="input-group-text">GPIO 5</span>
+                  <input type="text" class="form-control" data-gpio-watch="5" value="0" disabled>
+                </div>
+              </div>
+              <div class="col-2">
+                <div class="input-group mb-3">
+                  <span class="input-group-text">GPIO 21</span>
+                  <input type="text" class="form-control" data-gpio-watch="21" value="0" disabled>
+                </div>
+              </div>
+              <div class="col-2">
+                <div class="input-group mb-3">
+                  <span class="input-group-text">GPIO 22</span>
+                  <input type="text" class="form-control" data-gpio-watch="22" value="0" disabled>
+                </div>
+              </div>
+              <div class="col-2">
+                <div class="input-group mb-3">
+                  <span class="input-group-text">GPIO 23</span>
+                  <input type="text" class="form-control" data-gpio-watch="23" value="0" disabled>
+                </div>
+              </div>
             </section>
             <div class="py-3">
-              <button class="btn btn-primary btn-sm">Refresh</button>
+              <button id="refreshButton" class="btn btn-primary btn-sm">Refresh</button>
             </div>
           </div>
         </div>

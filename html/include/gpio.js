@@ -1,25 +1,32 @@
 (() => {
   'use strict'
 
-  const updateGpioStatuses = () => {
-    const req = {}
-
+  const updateChangableGpioStatuses = () => {
     document.querySelectorAll('[data-gpio]').forEach(element => {
-      fetch('/gpio/' + element.dataset.gpio).then((response) => {
-        const resp = response.json();
-        element.setAttribute('value', resp.value);
+      fetch('/gpio/' + element.dataset.gpio).then(response => {
+        response.json().then(respJson => {
+          element.setAttribute('value', respJson.value);
         element.removeAttribute('disabled');
-
-        console.log(resp);
-      }).then(data => 
-        console.log(data)
-      ).catch(
-        err => console.log('Fetch Error :-S', err)
+        })
+      }).catch(
+        err => console.log('Fetch Error', err)
       );
     })
   }
 
-  const subscribeChanges = () => {
+  const updateReadonlyGpioStatuses = () => {
+    document.querySelectorAll('[data-gpio-watch]').forEach(element => {
+      fetch('/gpio/' + element.dataset.gpioWatch).then(response => {
+        response.json().then(respJson => {
+          element.setAttribute('value', respJson.value);
+        })
+      }).catch(
+        err => console.log('Fetch Error', err)
+      );
+    })
+  }
+
+  const subscribeGpioChangeCheckboxes = () => {
     const req = {}
 
     document.querySelectorAll('[data-gpio]').forEach(element => {
@@ -41,12 +48,8 @@
               const resp = response.json();
               element.setAttribute('value', resp.value);
               element.removeAttribute('disabled');
-      
-              console.log(resp);
-            }).then(data => 
-              console.log(data)
-            ).catch(
-              err => console.log('Fetch Error :-S', err)
+            }).catch(
+              err => console.log('Fetch Error', err)
             );
         }
       )
@@ -54,7 +57,18 @@
   }
 
   window.addEventListener('DOMContentLoaded', () => {
-    updateGpioStatuses()
-    subscribeChanges()
+    updateChangableGpioStatuses()
+    updateReadonlyGpioStatuses()
+    subscribeGpioChangeCheckboxes()
+
+    document.getElementById("refreshButton").addEventListener(
+      'click',
+      () => updateReadonlyGpioStatuses()
+    )
+
+    setInterval(() => {
+      console.log("Refresh", new Date)
+      updateReadonlyGpioStatuses()
+    }, 15000)
   })
 })()
