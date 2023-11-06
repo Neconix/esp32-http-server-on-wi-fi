@@ -108,11 +108,18 @@ void init_spiffs() {
 
 void set_gpio_levels(void)
 {
-    for (uint8_t gpio_num = 1; gpio_num < 5; gpio_num++)
-    {
-        gpio_set_direction(gpio_num, GPIO_MODE_OUTPUT);
-        gpio_set_level(gpio_num, 0);
-    }
+    // Setting level for 2, 4, 18, 19 pins to LOW
+    gpio_set_direction(GPIO_NUM_2, GPIO_MODE_OUTPUT);
+    gpio_set_level(GPIO_NUM_2, 0);
+
+    gpio_set_direction(GPIO_NUM_4, GPIO_MODE_OUTPUT);
+    gpio_set_level(GPIO_NUM_4, 0);
+
+    gpio_set_direction(GPIO_NUM_18, GPIO_MODE_OUTPUT);
+    gpio_set_level(GPIO_NUM_18, 0);
+
+    gpio_set_direction(GPIO_NUM_19, GPIO_MODE_OUTPUT);
+    gpio_set_level(GPIO_NUM_19, 0);
 }
 
 void app_main(void)
